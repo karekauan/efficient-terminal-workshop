@@ -52,6 +52,27 @@ cat <<EOF > ${WORK_DIR}/pratica_basica/lista_ips_desordenada.txt
 192.168.1.1
 EOF
 
+DIR_APP="${WORK_DIR}/pratica_basica/meu_app"
+mkdir -p $DIR_APP
+
+cat <<EOF > ${DIR_APP}/main.py
+from calculadora import calcular_imposto
+valor_total = 1500.00
+imposto = calcular_imposto(valor_total)
+print(f"O imposto sobre o valor_total é {imposto}")
+EOF
+
+cat <<EOF > ${DIR_APP}/calculadora.py
+def calcular_imposto(valor_total):
+    # Regra de negócio usando o valor_total
+    return valor_total * 0.15
+EOF
+
+cat <<EOF > ${DIR_APP}/relatorio.py
+def gerar_pdf(valor_total):
+    print(f"Gerando relatorio para o montante: {valor_total}")
+EOF
+
 # ==========================================
 # 2. INSTRUÇÕES GERAIS
 # ==========================================
@@ -140,7 +161,7 @@ BEGIN {
         else if (i % 23 == 0) { ip = a2; url = "/../../../../etc/shadow"; status = "403"; } 
         else if (i % 37 == 0) { ip = a3; url = "/phpmyadmin/setup.php"; status = "404"; } 
         else if (i % 5 == 0) { url = "/assets/style.css"; } 
-        else if (i % 7 == 0) { url = "/images/logo.png"; }
+        else if (i % 7 == 0) { url = "/images/logo.jpg"; }
         
         printf "%s - - [29/Apr/2026:16:%02d:%02d +0000] \"%s %s HTTP/1.1\" %s %d\n", \
                ip, int(i/1300)%60, i%60, method, url, status, int(rand()*5000)
@@ -152,19 +173,33 @@ BEGIN {
 # ==========================================
 echo -e "${YELLOW}[6/6] Preparando ambiente para os truques de produtividade finais...${NC}"
 
-# --- Setup para o md5sum (Clones) ---
+# --- Setup para o md5sum (Clones Reais) ---
 DIR_IMAGENS="${WORK_DIR}/pratica_final/imagens_duplicadas"
-# Clone 1 (Praia)
-echo "CONTEUDO_FALSO_DE_IMAGEM_DA_PRAIA" > ${DIR_IMAGENS}/foto_praia.jpg
-echo "CONTEUDO_FALSO_DE_IMAGEM_DA_PRAIA" > ${DIR_IMAGENS}/copia_praia.jpg
-echo "CONTEUDO_FALSO_DE_IMAGEM_DA_PRAIA" > ${DIR_IMAGENS}/backup_img_12.jpg
+mkdir -p ${DIR_IMAGENS}
 
-# Clone 2 (Montanha)
-echo "CONTEUDO_FALSO_DA_MONTANHA" > ${DIR_IMAGENS}/montanha.jpg
-echo "CONTEUDO_FALSO_DA_MONTANHA" > ${DIR_IMAGENS}/img_001_final.jpg
+# Verifica se a pasta assets existe (onde você deixou as imagens reais no github)
+if [ -d "assets" ]; then
+    echo "Copiando imagens reais para o teste de hash..."
+    
+    # Clone 1 (Praia)
+    cp assets/base_praia.jpg ${DIR_IMAGENS}/foto_praia.jpg
+    cp assets/base_praia.jpg ${DIR_IMAGENS}/copia_praia.jpg
+    cp assets/base_praia.jpg ${DIR_IMAGENS}/backup_img_12.jpg
 
-# Arquivo Único (Gato)
-echo "CONTEUDO_FALSO_DO_GATO_EXCLUSIVO" > ${DIR_IMAGENS}/gato.png
+    # Clone 2 (Montanha)
+    cp assets/base_montanha.jpg ${DIR_IMAGENS}/montanha.jpg
+    cp assets/base_montanha.jpg ${DIR_IMAGENS}/img_001_final.jpg
+
+    # Arquivo Único (Gato)
+    cp assets/base_gato.jpg ${DIR_IMAGENS}/gato.jpg
+else
+    echo -e "\n⚠️ AVISO: A pasta 'assets' com as imagens originais não foi encontrada."
+    echo "Os arquivos duplicados foram gerados como texto em branco."
+    # Fallback caso o aluno rode o script fora do repositório clonado
+    touch ${DIR_IMAGENS}/{foto_praia.jpg,copia_praia.jpg,backup_img_12.jpg}
+    touch ${DIR_IMAGENS}/{montanha.jpg,img_001_final.jpg}
+    touch ${DIR_IMAGENS}/gato.jpg
+fi
 
 # --- Setup para o du -sh (Tamanhos diferentes) ---
 # Usamos o comando 'dd' com '/dev/zero' para criar arquivos que realmente
