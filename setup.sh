@@ -9,15 +9,15 @@ NC='\033[0m'
 echo -e "${BLUE}Iniciando a preparação do ambiente para o Workshop...${NC}\n"
 
 WORK_DIR="workshop_terminal"
-echo -e "${YELLOW}[1/5] Criando diretórios base em ./${WORK_DIR}...${NC}"
+echo -e "${YELLOW}[1/6] Criando diretórios base em ./${WORK_DIR}...${NC}"
 mkdir -p ${WORK_DIR}/{pratica_basica,ctf1_sistema,ctf2_logs,dicas}
+mkdir -p ${WORK_DIR}/pratica_final/{imagens_duplicadas,espaco_disco}
 
 # ==========================================
 # 1. CRIANDO ARQUIVOS PARA PRÁTICA BÁSICA
 # ==========================================
-echo -e "${YELLOW}[2/5] Gerando arquivos curtos para treino de comandos básicos...${NC}"
+echo -e "${YELLOW}[2/6] Gerando arquivos curtos para treino de comandos básicos...${NC}"
 
-# Para testar o 'wc' (contagem visível e rápida)
 cat <<EOF > ${WORK_DIR}/pratica_basica/poema.txt
 Batatinha quando nasce
 Espalha a rama pelo chao
@@ -25,10 +25,8 @@ A menina quando dorme
 Poe a mao no coracao
 EOF
 
-# Para testar 'head' e 'tail'
 seq 1 30 | sed 's/.*/Posicao & no ranking de vendas/' > ${WORK_DIR}/pratica_basica/ranking_vendas.txt
 
-# Para testar o 'grep'
 cat <<EOF > ${WORK_DIR}/pratica_basica/status_servidores.txt
 srv-web-01 ONLINE
 srv-web-02 OFFLINE
@@ -37,7 +35,6 @@ srv-bd-02 ONLINE
 srv-cache-01 OFFLINE
 EOF
 
-# Para testar o 'cut' (delimitador diferente de espaço)
 cat <<EOF > ${WORK_DIR}/pratica_basica/funcionarios.csv
 Matricula;Nome;Departamento
 101;Ana Silva;TI
@@ -46,7 +43,6 @@ Matricula;Nome;Departamento
 104;Daniela Lima;Financeiro
 EOF
 
-# Para testar 'sort' e 'uniq' (A explicação sobre a dependência entre eles)
 cat <<EOF > ${WORK_DIR}/pratica_basica/lista_ips_desordenada.txt
 192.168.1.1
 10.0.0.50
@@ -59,7 +55,7 @@ EOF
 # ==========================================
 # 2. INSTRUÇÕES GERAIS
 # ==========================================
-echo -e "${YELLOW}[3/5] Gerando arquivos de instrução e dicas para o CTF...${NC}"
+echo -e "${YELLOW}[3/6] Gerando arquivos de instrução e dicas para o CTF...${NC}"
 
 cat <<EOF > ${WORK_DIR}/dicas/instrucoes_ctf1.txt
 ALERTA DE INCIDENTE INTERNO
@@ -75,28 +71,23 @@ EOF
 # ==========================================
 # 3. CRIANDO CTF 1 (A Trilha de Migalhas)
 # ==========================================
-echo -e "${YELLOW}[4/5] Construindo o sistema de arquivos do CTF 1 (Trilha e Ruído)...${NC}"
+echo -e "${YELLOW}[4/6] Construindo o sistema de arquivos do CTF 1 (Trilha e Ruído)...${NC}"
 
-# Criando pastas de ruído
 for i in {1..20}; do
     mkdir -p ${WORK_DIR}/ctf1_sistema/pasta_$i
     mkdir -p ${WORK_DIR}/ctf1_sistema/pasta_$i/sub_$(($RANDOM % 100))
 done
 
-# PISTA 1: Oculta na raiz
 cat <<EOF > ${WORK_DIR}/ctf1_sistema/.pista1_oculta.txt
 Boa! Voce encontrou o arquivo oculto.
 A proxima pista esta no arquivo 'logs_antigos.txt', localizado na 'pasta_7'.
 No entanto, o arquivo esta corrompido e so a LINHA 42 contem a informacao real.
-DICA: Voce precisara usar head e tail juntos para extrair APENAS a linha 42.
 EOF
 
-# PISTA 2: A linha 42
 mkdir -p ${WORK_DIR}/ctf1_sistema/pasta_7
 seq 1 100 | sed 's/.*/Linha corrompida de log.../' > ${WORK_DIR}/ctf1_sistema/pasta_7/logs_antigos.txt
 sed -i '42s/.*/Acesso confirmado. O invasor registrou seus dados no arquivo "usuarios.csv" na "pasta_12". Voce precisa descobrir o EMAIL dele. Busque pela palavra ADMIN nesse arquivo e extraia apenas a SEGUNDA COLUNA (delimitada por virgula)./' ${WORK_DIR}/ctf1_sistema/pasta_7/logs_antigos.txt
 
-# PISTA 3: O CSV e a extração
 mkdir -p ${WORK_DIR}/ctf1_sistema/pasta_12
 cat <<EOF > ${WORK_DIR}/ctf1_sistema/pasta_12/usuarios.csv
 id,email,perfil,status
@@ -112,22 +103,19 @@ CONTE quantas vezes esse email aparece no log. O NUMERO DE APARICOES eh exatamen
 o NUMERO DE LINHAS do arquivo que esconde a flag final.
 EOF
 
-# Gerando o log gigante para o CTF 1
 > ${WORK_DIR}/ctf1_sistema/historico_conexoes.log
 for i in {1..2000}; do echo "conexao normal de usuario padrao" >> ${WORK_DIR}/ctf1_sistema/historico_conexoes.log; done
 for i in {1..333}; do echo "login efetuado por fantasma@darkweb.net as 03:00AM" >> ${WORK_DIR}/ctf1_sistema/historico_conexoes.log; done
 for i in {1..1500}; do echo "conexao normal de usuario padrao" >> ${WORK_DIR}/ctf1_sistema/historico_conexoes.log; done
 
-# O ARQUIVO FINAL: Exatamente 333 linhas
 ARQUIVO_ALVO="${WORK_DIR}/ctf1_sistema/pasta_14/sub_42/system_config.old"
 mkdir -p $(dirname $ARQUIVO_ALVO)
-seq 1 332 > $ARQUIVO_ALVO # 332 linhas de lixo
-echo "ZmxhZ3t0M3JtMW40bF9yM3MwbHYzX3R1RDB9" >> $ARQUIVO_ALVO # A linha 333 é a flag
+seq 1 332 > $ARQUIVO_ALVO
+echo "ZmxhZ3t0M3JtMW40bF9yM3MwbHYzX3R1RDB9" >> $ARQUIVO_ALVO
 
-# Gerando arquivos de ruído genéricos
 for i in {1..150}; do
     LINHAS=$(($RANDOM % 5000 + 1))
-    if [ "$LINHAS" -eq 333 ]; then LINHAS=334; fi # Proteção para não haver duas respostas possíveis
+    if [ "$LINHAS" -eq 333 ]; then LINHAS=334; fi
     PASTA_DESTINO=${WORK_DIR}/ctf1_sistema/pasta_$(($RANDOM % 20 + 1))
     head -c 500 /dev/urandom | base64 | head -n $LINHAS > ${PASTA_DESTINO}/log_backup_${i}.txt 2>/dev/null
 done
@@ -135,12 +123,11 @@ done
 # ==========================================
 # 4. CRIANDO CTF 2 (Logs de Incidente)
 # ==========================================
-echo -e "${YELLOW}[5/5] Simulando tráfego do servidor para o CTF 2 (Isso pode levar alguns segundos)...${NC}"
+echo -e "${YELLOW}[5/6] Simulando tráfego do servidor para o CTF 2...${NC}"
 
 LOG_FILE="${WORK_DIR}/ctf2_logs/access.log"
 LINES=75000
 
-# Script awk para geração ultrarrápida do log com injeção de ataque
 awk -v lines="$LINES" \
     -v a1="185.15.20.11" -v a2="45.22.19.100" -v a3="103.45.99.12" '
 BEGIN {
@@ -160,6 +147,34 @@ BEGIN {
     }
 }' > $LOG_FILE
 
+# ==========================================
+# 5. CRIANDO ARQUIVOS PARA PRÁTICA FINAL (Truques)
+# ==========================================
+echo -e "${YELLOW}[6/6] Preparando ambiente para os truques de produtividade finais...${NC}"
+
+# --- Setup para o md5sum (Clones) ---
+DIR_IMAGENS="${WORK_DIR}/pratica_final/imagens_duplicadas"
+# Clone 1 (Praia)
+echo "CONTEUDO_FALSO_DE_IMAGEM_DA_PRAIA" > ${DIR_IMAGENS}/foto_praia.jpg
+echo "CONTEUDO_FALSO_DE_IMAGEM_DA_PRAIA" > ${DIR_IMAGENS}/copia_praia.jpg
+echo "CONTEUDO_FALSO_DE_IMAGEM_DA_PRAIA" > ${DIR_IMAGENS}/backup_img_12.jpg
+
+# Clone 2 (Montanha)
+echo "CONTEUDO_FALSO_DA_MONTANHA" > ${DIR_IMAGENS}/montanha.jpg
+echo "CONTEUDO_FALSO_DA_MONTANHA" > ${DIR_IMAGENS}/img_001_final.jpg
+
+# Arquivo Único (Gato)
+echo "CONTEUDO_FALSO_DO_GATO_EXCLUSIVO" > ${DIR_IMAGENS}/gato.png
+
+# --- Setup para o du -sh (Tamanhos diferentes) ---
+# Usamos o comando 'dd' com '/dev/zero' para criar arquivos que realmente
+# ocupam espaço no disco de forma muito rápida.
+DIR_ESPACO="${WORK_DIR}/pratica_final/espaco_disco"
+dd if=/dev/zero of=${DIR_ESPACO}/backup_banco.sql bs=1M count=120 2>/dev/null
+dd if=/dev/zero of=${DIR_ESPACO}/video_treinamento.mp4 bs=1M count=55 2>/dev/null
+dd if=/dev/zero of=${DIR_ESPACO}/relatorio_antigo.pdf bs=1M count=12 2>/dev/null
+dd if=/dev/zero of=${DIR_ESPACO}/planilha_custos.xlsx bs=1M count=2 2>/dev/null
+
 echo -e "\n${GREEN}=== AMBIENTE PRONTO ===${NC}"
 echo -e "Todos os arquivos foram gerados na pasta: ${BLUE}./${WORK_DIR}${NC}"
-echo -e "Use 'cd ${WORK_DIR}/pratica_basica' para começar a demonstração."
+echo -e "Use 'cd ${WORK_DIR}/pratica_basica' para começar a demonstração inicial."
